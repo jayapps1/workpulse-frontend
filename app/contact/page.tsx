@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -10,19 +10,32 @@ export default function ContactPage() {
     message: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Mock submission – replace with actual API later
     console.log('Contact form submitted:', formData);
     setSubmitted(true);
     setFormData({ name: '', email: '', subject: '', message: '' });
-    setTimeout(() => setSubmitted(false), 3000);
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setSubmitted(false);
+    }, 3000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,46 +93,62 @@ export default function ContactPage() {
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-primary text-sm font-medium mb-1">Name *</label>
+                <label htmlFor="name" className="block text-primary text-sm font-medium mb-1">
+                  Name *
+                </label>
                 <input
                   type="text"
+                  id="name"
                   name="name"
                   required
                   value={formData.name}
                   onChange={handleChange}
+                  placeholder="Your full name"
                   className="w-full px-3 py-2 border border-accent rounded-md focus:outline-none focus:ring-secondary focus:border-secondary"
                 />
               </div>
               <div>
-                <label className="block text-primary text-sm font-medium mb-1">Email *</label>
+                <label htmlFor="email" className="block text-primary text-sm font-medium mb-1">
+                  Email *
+                </label>
                 <input
                   type="email"
+                  id="email"
                   name="email"
                   required
                   value={formData.email}
                   onChange={handleChange}
+                  placeholder="you@example.com"
                   className="w-full px-3 py-2 border border-accent rounded-md focus:outline-none focus:ring-secondary focus:border-secondary"
                 />
               </div>
               <div>
-                <label className="block text-primary text-sm font-medium mb-1">Subject *</label>
+                <label htmlFor="subject" className="block text-primary text-sm font-medium mb-1">
+                  Subject *
+                </label>
                 <input
                   type="text"
+                  id="subject"
                   name="subject"
                   required
                   value={formData.subject}
                   onChange={handleChange}
+                  placeholder="What is this about?"
                   className="w-full px-3 py-2 border border-accent rounded-md focus:outline-none focus:ring-secondary focus:border-secondary"
                 />
               </div>
               <div>
-                <label className="block text-primary text-sm font-medium mb-1">Message *</label>
+                <label htmlFor="message" className="block text-primary text-sm font-medium mb-1">
+                  Message *
+                </label>
                 <textarea
+                  id="message"
                   name="message"
                   required
                   rows={4}
                   value={formData.message}
                   onChange={handleChange}
+                  placeholder="Write your message here..."
                   className="w-full px-3 py-2 border border-accent rounded-md focus:outline-none focus:ring-secondary focus:border-secondary"
                 ></textarea>
               </div>
