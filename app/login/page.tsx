@@ -24,14 +24,28 @@ export default function LoginPage() {
       console.log('Login response:', { user, token });
       setAuth(user, token);
       console.log('Auth store updated, redirecting to:', `/dashboard/${user.role}`);
-      // Use window.location as fallback if router.push fails
-      await router.push(`/dashboard/${user.role}`);
+      
+      // Try Next.js navigation first
+      router.push(`/dashboard/${user.role}`);
+      
+      // Fallback: if still on same page after 500ms, force full reload
+      setTimeout(() => {
+        if (window.location.pathname !== `/dashboard/${user.role}`) {
+          console.log('Router.push failed, using window.location');
+          window.location.href = `/dashboard/${user.role}`;
+        }
+      }, 500);
+      
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message);
-    } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    alert('Password reset feature coming soon!');
+    // TODO: Implement password reset flow later
   };
 
   return (
@@ -67,6 +81,18 @@ export default function LoginPage() {
               placeholder="123456"
             />
           </div>
+          
+          {/* Forgot Password Link */}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-sm text-secondary hover:text-primary transition"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
